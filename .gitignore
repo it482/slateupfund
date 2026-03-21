@@ -35,6 +35,7 @@ ENV/
 .vscode/
 *.swp
 *.swo
+.cursor
 
 # Testing
 .pytest_cache/
