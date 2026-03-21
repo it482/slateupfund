@@ -33,8 +33,6 @@ ENV/
 # IDE
 .idea/
 .vscode/
-.cursor/
-.cursor/skills/boldsign-assistant/
 *.swp
 *.swo
 
