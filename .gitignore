@@ -33,9 +33,9 @@ ENV/
 # IDE
 .idea/
 .vscode/
+.cursor/
 *.swp
 *.swo
-.cursor
 
 # Testing
 .pytest_cache/
