@@ -26,15 +26,20 @@ async def lifespan(app: FastAPI):
     """Application lifespan handler."""
     settings = config.get_settings()
     if not settings.debug:
+        # Do not raise here: a failed lifespan prevents the server from binding to PORT,
+        # which Cloud Run reports as "container failed to listen on PORT=8080". Log and
+        # continue so /health works; document routes still enforce keys via dependencies.
         if not settings.boldsign_api_key:
-            raise RuntimeError(
-                "BOLDSIGN_API_KEY is required when DEBUG=false. "
-                "Set it in .env or set DEBUG=true for local development."
+            logger.critical(
+                "BOLDSIGN_API_KEY is not set (DEBUG=false). "
+                "Set it in the Cloud Run service environment (or .env locally). "
+                "BoldSign document endpoints will fail until it is configured."
             )
         if not settings.api_key:
-            raise RuntimeError(
-                "API_KEY is required when DEBUG=false. "
-                "Set it in .env or set DEBUG=true for local development."
+            logger.critical(
+                "API_KEY is not set (DEBUG=false). "
+                "Set it in the Cloud Run service environment (or .env locally). "
+                "Authenticated routes will reject requests until it is configured."
             )
     elif not settings.boldsign_api_key or not settings.api_key:
         logger.warning(
