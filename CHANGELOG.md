@@ -2,8 +2,6 @@
 
 All notable structural changes to this project are documented here.
 
-## [Unreleased]
-
 ### Changed
 
 - **`DEBUG` default** is `false` (secure production default). Set `DEBUG=true` in `.env` for interactive docs and relaxed key checks during local development.
