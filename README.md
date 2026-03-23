@@ -19,7 +19,7 @@ Production-ready backend API for creating BoldSign documents from templates with
    API_KEY=your_api_key_for_auth
    ```
 
-   Copy from `.env.example` for all options. Default `DEBUG` is `false` (production-safe). Set `DEBUG=true` for local development: startup then allows missing BoldSign/API keys with a warning. When `DEBUG=false`, both `BOLDSIGN_API_KEY` and `API_KEY` are required. All `/documents/*` endpoints require the `X-API-Key` header. Set `CORS_ORIGINS` (comma-separated) for browser clients; when `DEBUG=true` and empty, defaults to `*` with **credentials disabled** (safe combination). Set `RATE_LIMIT` (e.g. `100/minute`) for rate limiting; default is `100/minute`.
+   Copy from `.env.example` for all options. Default `DEBUG` is `false` (production-safe). Set `DEBUG=true` for local development: startup logs a warning if BoldSign/API keys are missing. When `DEBUG=false`, the process **still starts** if keys are unset (critical log only)—this keeps `GET /health` reachable on platforms like Cloud Run while secrets are wired up; document routes require `BOLDSIGN_API_KEY` and `API_KEY` at runtime via dependencies. All `/documents/*` endpoints require the `X-API-Key` header. Set `CORS_ORIGINS` (comma-separated) for browser clients; when `DEBUG=true` and empty, defaults to `*` with **credentials disabled** (safe combination). Set `RATE_LIMIT` (e.g. `100/minute`) for rate limiting; default is `100/minute`.
 
 3. **Run the API**:
 
@@ -31,6 +31,20 @@ Production-ready backend API for creating BoldSign documents from templates with
    - **OpenAPI JSON** (for codegen / future agents): http://localhost:8000/openapi.json — always available when the server is running, including in production.
 
 4. **Health check**: `GET /health` returns `{"status": "ok"}` for load balancers and monitoring. No auth required.
+
+5. **Container / Cloud Run** (optional): build and run with the repo `Dockerfile` (Python 3.12-slim, installs the package, listens on `PORT`, default `8080`). Example:
+
+   ```bash
+   docker build -t slateupfunding-api .
+   docker run -p 8080:8080 -e PORT=8080 -e BOLDSIGN_API_KEY=... -e API_KEY=... slateupfunding-api
+   ```
+
+## Recent updates (post-deployment)
+
+- **Container image**: Added `Dockerfile` and `.dockerignore` for standard deployments; uvicorn binds `0.0.0.0` and uses the `PORT` env var (Cloud Run–compatible).
+- **Startup on missing secrets**: In production (`DEBUG=false`), missing `BOLDSIGN_API_KEY` or `API_KEY` no longer prevents the app from listening on the port; critical logs are emitted instead so health checks succeed while you configure the service. Authenticated routes still enforce the API key; BoldSign calls need a valid BoldSign key.
+- **API response**: Each entry in `signer_links` now includes optional **`embed_id`**—the opaque `documentId` query value parsed from BoldSign’s `sign_link` (useful for embedded signing flows where that token is distinct from the top-level `document_id`).
+- **Request JSON**: Create-from-template accepts **camelCase** field names (`signerName`, `signerEmail`, `roleIndex`) as well as snake_case, matching common client conventions.
 
 ## Architecture
 
@@ -77,7 +91,7 @@ Creates a document from an existing BoldSign template with multiple signers.
 }
 ```
 
-- `role_index`: Maps to template roles (1 = first role, 2 = second, etc.). Create the template in the BoldSign web app and note role indices.
+- `role_index`: Maps to template roles (1 = first role, 2 = second, etc.). Create the template in the BoldSign web app and note role indices. You may send `signerName`, `signerEmail`, and `roleIndex` instead of the snake_case names.
 - `prefill_fields`: Optional. Prefills form fields via BoldSign `existingFormFields` (single API call). Use `role_index` for multi-signer templates; omit to assign to the first signer's role.
 - `signer_email`: Must be a valid email format.
 - `disable_emails`: If `true`, signers get no email; use embedded URLs only.
@@ -93,12 +107,14 @@ Creates a document from an existing BoldSign template with multiple signers.
       "signer_email": "alice@example.com",
       "signer_name": "Alice",
       "sign_link": "https://app.boldsign.com/document/sign/?documentId=...",
+      "embed_id": "opaque-token-from-sign-link",
       "expires_at": "2025-04-15T12:00:00+00:00"
     },
     {
       "signer_email": "bob@example.com",
       "signer_name": "Bob",
       "sign_link": "https://app.boldsign.com/document/sign/?documentId=...",
+      "embed_id": "opaque-token-from-sign-link",
       "expires_at": "2025-04-15T12:00:00+00:00"
     }
   ]
