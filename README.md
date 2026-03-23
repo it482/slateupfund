@@ -1,6 +1,6 @@
 # SlateUp Funding Backend API
 
-Production-ready backend API for creating BoldSign documents from templates with multiple signers. Returns document ID and embedded sign URLs with configurable expiration.
+Backend API for creating BoldSign documents from templates with multiple signers. Returns document ID and embedded sign URLs with configurable expiration.
 
 ## Setup
 
