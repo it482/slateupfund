@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from backend.exceptions import BoldSignServiceError
-from backend.services.boldsign_service import BoldSignService
+from backend.services.boldsign_service import BoldSignService, _embed_id_from_sign_link
 
 
 @pytest.fixture
@@ -63,13 +63,40 @@ def test_create_document_invalid_signer_raises(service_pair):
         )
 
 
+@pytest.mark.parametrize(
+    "sign_url,expected_embed_id",
+    [
+        (
+            "https://app.boldsign.com/document/sign/?documentId=opaque-embed-token",
+            "opaque-embed-token",
+        ),
+        ("https://sign.boldsign.com/embed/xyz", None),
+    ],
+)
+def test_embed_id_from_sign_link(sign_url, expected_embed_id):
+    """documentId query is parsed; missing param yields None."""
+    assert _embed_id_from_sign_link(sign_url) == expected_embed_id
+
+
+def test_embed_id_from_sign_link_case_insensitive():
+    """Query key documentId is matched case-insensitively."""
+    assert (
+        _embed_id_from_sign_link(
+            "https://app.boldsign.com/document/sign/?DOCUMENTID=mixed-case-key"
+        )
+        == "mixed-case-key"
+    )
+
+
 def test_create_document_success(service_pair):
     """Successful create returns document_id and signer_links."""
     service, template_client = service_pair
     template_client.send_template.return_value = {"documentId": "doc_abc123"}
 
     mock_link_result = MagicMock()
-    mock_link_result.sign_link = "https://sign.boldsign.com/embed/xyz"
+    mock_link_result.sign_link = (
+        "https://app.boldsign.com/document/sign/?documentId=opaque-embed-token"
+    )
 
     with patch("backend.services.boldsign_service.boldsign.ApiClient") as mock_client:
         mock_doc_api = MagicMock()
@@ -87,7 +114,10 @@ def test_create_document_success(service_pair):
     assert result["document_id"] == "doc_abc123"
     assert len(result["signer_links"]) == 1
     assert result["signer_links"][0]["signer_email"] == "alice@example.com"
-    assert result["signer_links"][0]["sign_link"] == "https://sign.boldsign.com/embed/xyz"
+    assert result["signer_links"][0]["sign_link"] == (
+        "https://app.boldsign.com/document/sign/?documentId=opaque-embed-token"
+    )
+    assert result["signer_links"][0]["embed_id"] == "opaque-embed-token"
     template_client.send_template.assert_called_once()
     call_args = template_client.send_template.call_args
     assert call_args[0][0] == "tpl_123"

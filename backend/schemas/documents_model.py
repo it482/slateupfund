@@ -92,6 +92,12 @@ class SignerLink(BaseModel):
     signer_email: str
     signer_name: str = ""
     sign_link: str
+    embed_id: Optional[str] = Field(
+        default=None,
+        description=(
+            "Opaque `documentId` query value from sign_link (distinct from top-level document_id)."
+        ),
+    )
     expires_at: str
 
 

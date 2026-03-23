@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
+from urllib.parse import parse_qs, urlparse
 
 import boldsign
 from boldsign.api.document_api import DocumentApi
@@ -11,6 +12,17 @@ from backend.exceptions import BoldSignServiceError
 from backend.services.boldsign_template_client import BoldSignTemplateClient
 from backend.services.doc_prefill import prefill_form_fields as _prefill_form_fields
 from backend.services.field_validation import group_template_prefill_by_role
+
+
+def _embed_id_from_sign_link(sign_link: str) -> Optional[str]:
+    """Return documentId query value from a BoldSign embed URL (case-insensitive key)."""
+    if not sign_link:
+        return None
+    query = parse_qs(urlparse(sign_link).query, keep_blank_values=True)
+    for key, values in query.items():
+        if key.lower() == "documentid" and values and values[0]:
+            return values[0]
+    return None
 
 
 class BoldSignService:
@@ -63,7 +75,12 @@ class BoldSignService:
             {
                 "document_id": str,
                 "signer_links": [
-                    {"signer_email": str, "sign_link": str, "expires_at": "ISO8601"}
+                    {
+                        "signer_email": str,
+                        "sign_link": str,
+                        "embed_id": str | None,
+                        "expires_at": "ISO8601",
+                    }
                 ]
             }
         """
@@ -150,11 +167,13 @@ class BoldSignService:
                     ) from e
 
                 if link_result.sign_link:
+                    sl = link_result.sign_link
                     signer_links.append(
                         {
                             "signer_email": signer_email,
                             "signer_name": signer.get("signer_name", ""),
-                            "sign_link": link_result.sign_link,
+                            "sign_link": sl,
+                            "embed_id": _embed_id_from_sign_link(sl),
                             "expires_at": expires_at.isoformat(),
                         }
                     )
