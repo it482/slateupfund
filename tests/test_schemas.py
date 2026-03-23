@@ -180,7 +180,8 @@ class TestCreateDocumentFromTemplateResponse:
                 SignerLink(
                     signer_email="a@x.com",
                     signer_name="Alice",
-                    sign_link="https://sign.link/1",
+                    sign_link="https://app.boldsign.com/document/sign/?documentId=emb-1",
+                    embed_id="emb-1",
                     expires_at="2025-04-17T12:00:00Z",
                 ),
             ],
@@ -189,6 +190,7 @@ class TestCreateDocumentFromTemplateResponse:
         assert len(resp.signer_links) == 1
         assert resp.signer_links[0].signer_email == "a@x.com"
         assert resp.signer_links[0].signer_name == "Alice"
+        assert resp.signer_links[0].embed_id == "emb-1"
 
 
 class TestPrefillFormFieldsRequest:

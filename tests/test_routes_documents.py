@@ -20,7 +20,10 @@ def mock_boldsign():
             {
                 "signer_email": "alice@example.com",
                 "signer_name": "Alice",
-                "sign_link": "https://sign.link/1",
+                "sign_link": (
+                    "https://app.boldsign.com/document/sign/?documentId=route-embed-id"
+                ),
+                "embed_id": "route-embed-id",
                 "expires_at": "2025-04-17T12:00:00Z",
             },
         ],
@@ -63,7 +66,10 @@ def test_create_document_from_template_success(client: TestClient):
     assert data["document_id"] == "doc_xyz"
     assert len(data["signer_links"]) == 1
     assert data["signer_links"][0]["signer_email"] == "alice@example.com"
-    assert data["signer_links"][0]["sign_link"] == "https://sign.link/1"
+    assert data["signer_links"][0]["sign_link"] == (
+        "https://app.boldsign.com/document/sign/?documentId=route-embed-id"
+    )
+    assert data["signer_links"][0]["embed_id"] == "route-embed-id"
 
 
 def test_create_document_from_template_with_prefill_passes_fields(
