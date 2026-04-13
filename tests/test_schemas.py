@@ -116,6 +116,18 @@ class TestCreateDocumentFromTemplateRequest:
         assert len(req.signers) == 1
         assert req.disable_emails is True
         assert req.embed_link_expiry_days == 30
+        assert req.redirect_url is None
+
+    def test_redirect_url_alias(self):
+        """redirectUrl camelCase and redirect_url snake_case both work."""
+        base = dict(
+            template_id="tpl_123",
+            signers=[SignerInput(role_index=1, signer_name="A", signer_email="a@x.com")],
+        )
+        r1 = CreateDocumentFromTemplateRequest(**base, redirect_url="https://app.example.com/done")
+        r2 = CreateDocumentFromTemplateRequest(**base, redirectUrl="https://app.example.com/done")
+        assert r1.redirect_url == "https://app.example.com/done"
+        assert r2.redirect_url == "https://app.example.com/done"
 
     def test_full_request(self):
         """Full request with optional fields passes."""
@@ -130,12 +142,14 @@ class TestCreateDocumentFromTemplateRequest:
             disable_emails=False,
             embed_link_expiry_days=90,
             prefill_fields=[PrefillFormFieldInput(id="f1", value="v1")],
+            redirect_url="https://example.com/thank-you",
         )
         assert req.title == "Doc Title"
         assert req.message == "Please sign"
         assert req.disable_emails is False
         assert req.embed_link_expiry_days == 90
         assert len(req.prefill_fields) == 1
+        assert req.redirect_url == "https://example.com/thank-you"
 
     def test_empty_template_id_rejected(self):
         """Empty template_id is rejected."""

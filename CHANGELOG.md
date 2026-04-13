@@ -16,6 +16,11 @@ All notable structural changes to this project are documented here.
 - **CORS**: Wildcard origins (`*`) are not combined with `allow_credentials=True`.
 - **Routes**: `PATCH /documents/{document_id}/prefill` is active (standalone prefill).
 
+### Added
+
+- **Embedded signing**: Optional `redirectUrl` / `redirect_url` on `POST /documents/from-template` is forwarded to BoldSign when generating embedded sign links (post-sign redirect).
+
 ### Documentation
 
 - Added `docs/ARCHITECTURE.md` describing layers, DI, and contract/security choices.
+- **README**: Table of all `docs/*.md` files, `redirectUrl` and role limits, expanded setup notes (`.gitignore` / `.env.example`), and refreshed examples.

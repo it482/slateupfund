@@ -55,6 +55,7 @@ class BoldSignService:
         disable_emails: bool = True,
         embed_link_expiry_days: int = 30,
         prefill_fields: Optional[list[dict[str, Any]]] = None,
+        redirect_url: Optional[str] = None,
     ) -> dict:
         """
         Create a document from a template and return document ID with embedded sign URLs.
@@ -70,6 +71,7 @@ class BoldSignService:
             disable_emails: If True, signers won't receive email (use embedded URLs only).
             embed_link_expiry_days: Days until embedded sign links expire (1-180).
             prefill_fields: Optional list of {"id", "value", "role_index"?}. role_index defaults to first signer.
+            redirect_url: Optional post-signing redirect for embedded links (BoldSign redirectUrl).
 
         Returns:
             {
@@ -159,6 +161,7 @@ class BoldSignService:
                         document_id=document_id,
                         signer_email=signer_email,
                         sign_link_valid_till=sign_link_valid_till,
+                        redirect_url=redirect_url,
                     )
                 except Exception as e:
                     raise BoldSignServiceError(

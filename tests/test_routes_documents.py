@@ -100,6 +100,29 @@ def test_create_document_from_template_with_prefill_passes_fields(
     ]
 
 
+def test_create_document_from_template_redirect_url_forwarded(
+    client: TestClient, mock_boldsign: MagicMock
+):
+    """redirectUrl in JSON is passed to the service as redirect_url."""
+    response = client.post(
+        "/documents/from-template",
+        headers={"X-API-Key": "test-api-key"},
+        json={
+            "template_id": "tpl_123",
+            "signers": [
+                {"role_index": 1, "signer_name": "Alice", "signer_email": "alice@example.com"},
+            ],
+            "redirectUrl": "https://app.example.com/after-sign",
+        },
+    )
+    assert response.status_code == 200
+    mock_boldsign.create_document_from_template.assert_called_once()
+    assert (
+        mock_boldsign.create_document_from_template.call_args.kwargs["redirect_url"]
+        == "https://app.example.com/after-sign"
+    )
+
+
 def test_create_document_from_template_missing_api_key_returns_401(client: TestClient):
     """Missing X-API-Key header returns 401."""
     response = client.post(
