@@ -52,6 +52,8 @@ class PrefillFormFieldInput(BaseModel):
 class CreateDocumentFromTemplateRequest(BaseModel):
     """Create an envelope from a BoldSign template and obtain embedded signing URLs."""
 
+    model_config = {"populate_by_name": True}
+
     template_id: str = Field(
         min_length=1,
         description="BoldSign template id from the BoldSign dashboard.",
@@ -83,6 +85,15 @@ class CreateDocumentFromTemplateRequest(BaseModel):
     prefill_fields: Optional[list[PrefillFormFieldInput]] = Field(
         default=None,
         description="Optional fields sent as existingFormFields in the same send call.",
+    )
+    redirect_url: Optional[str] = Field(
+        default=None,
+        max_length=2048,
+        alias="redirectUrl",
+        description=(
+            "Optional URL BoldSign opens after the signer completes embedded signing "
+            "(BoldSign getEmbeddedSignLink redirectUrl). Omit for default BoldSign behavior."
+        ),
     )
 
 

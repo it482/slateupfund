@@ -27,6 +27,7 @@ router = APIRouter(
     description=(
         "Creates a BoldSign document from an existing template with one or more signers. "
         "Returns the document ID and per-signer embedded signing URLs. "
+        "Optional redirectUrl sends signers to your page after embedded signing completes. "
         "Side effect: sends or prepares the document in BoldSign according to disable_emails. "
         "Requires X-API-Key. Machine clients may use GET /openapi.json for the full contract."
     ),
@@ -59,6 +60,7 @@ async def create_document_from_template(
             if body.prefill_fields
             else None
         ),
+        redirect_url=body.redirect_url,
     )
     return CreateDocumentFromTemplateResponse(**result)
 

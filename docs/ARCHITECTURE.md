@@ -34,5 +34,7 @@ All application code uses the **`backend.*`** package prefix (e.g. `from backend
 
 ## Related docs
 
-- Root `README.md`: setup, env vars, endpoints.
+- Root `README.md`: setup, env vars, endpoints, and a directory of all `docs/*.md` files.
+- `docs/SECURITY.md`: secrets, transport, and operational security expectations.
+- `docs/REFACTOR_PREFILL_TO_EXISTING_FORM_FIELDS.md`: prefill-at-send design (`existingFormFields`).
 - `CHANGELOG.md`: dated structural changes.

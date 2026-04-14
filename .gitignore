@@ -1,5 +1,7 @@
-# Environment and secrets
+# Environment and secrets (never commit real values)
 .env
+.env.*
+!.env.example
 .env.local
 .env.*.local
 
@@ -21,26 +23,82 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
 
 # Virtual environments
 .venv/
 venv/
 ENV/
+env/
+.env.venv
+venv.bak/
+env.bak/
 
-# IDE
+# Type checkers / linters / formatters
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.pyre/
+.ruff_cache/
+
+# Testing and coverage
+.pytest_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+*.py,cover
+htmlcov/
+nosetests.xml
+.cache
+pytestdebug.log
+
+# Logs and local data
+*.log
+logs/
+*.sqlite3
+*.db
+
+# Packaging / publish
+.pypirc
+
+# Jupyter (if added later)
+.ipynb_checkpoints/
+
+# mkdocs / Sphinx (if added later)
+/site
+docs/_build/
+
+# Celery (if added later)
+celerybeat-schedule
+celerybeat.pid
+
+# Docker: local overrides often hold secrets or machine-specific binds
+docker-compose.override.yml
+docker-compose.*.local.yml
+
+# IDE and editors
 .idea/
 .vscode/
 *.swp
 *.swo
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
+*~
+.project
+.pydevproject
+.settings/
 
 # OS
 .DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini

@@ -123,6 +123,40 @@ def test_create_document_success(service_pair):
     assert call_args[0][0] == "tpl_123"
     payload = call_args[0][1]
     assert "existingFormFields" not in payload["roles"][0]
+    mock_doc_api.get_embedded_sign_link.assert_called_once()
+    assert mock_doc_api.get_embedded_sign_link.call_args.kwargs.get("redirect_url") is None
+
+
+def test_create_document_passes_redirect_url_to_embedded_link(service_pair):
+    """Optional redirect_url is forwarded to get_embedded_sign_link for each signer."""
+    service, template_client = service_pair
+    template_client.send_template.return_value = {"documentId": "doc_abc123"}
+
+    mock_link_result = MagicMock()
+    mock_link_result.sign_link = (
+        "https://app.boldsign.com/document/sign/?documentId=opaque-embed-token"
+    )
+
+    with patch("backend.services.boldsign_service.boldsign.ApiClient") as mock_client:
+        mock_doc_api = MagicMock()
+        mock_doc_api.get_embedded_sign_link.return_value = mock_link_result
+        mock_client.return_value.__enter__.return_value = mock_doc_api
+        with patch(
+            "backend.services.boldsign_service.DocumentApi",
+            return_value=mock_doc_api,
+        ):
+            service.create_document_from_template(
+                template_id="tpl_123",
+                signers=[
+                    {"role_index": 1, "signer_name": "Alice", "signer_email": "alice@example.com"},
+                    {"role_index": 2, "signer_name": "Bob", "signer_email": "bob@example.com"},
+                ],
+                redirect_url="https://client.example.com/signed",
+            )
+
+    assert mock_doc_api.get_embedded_sign_link.call_count == 2
+    for call in mock_doc_api.get_embedded_sign_link.call_args_list:
+        assert call.kwargs["redirect_url"] == "https://client.example.com/signed"
 
 
 def test_create_document_http_error_raises(service_pair):
